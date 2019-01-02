@@ -1,14 +1,19 @@
 package com.example.hien.webser;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -23,6 +28,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     final String SERVER ="http://192.168.56.1/";
@@ -61,6 +68,46 @@ public class MainActivity extends AppCompatActivity {
                 xulyThemGet();
             }
         });
+        btnThemPostNV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                xulyThemPost();
+            }
+        });
+    }
+
+    private void xulyThemPost() {
+        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+        Response.Listener<String> listener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                txtResponse.setText(response);
+            }
+        };
+        Response.ErrorListener errorLis = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                txtResponse.setText(error.getMessage());
+            }
+        };
+        Uri.Builder buil = Uri.parse(SERVER + "post_themNV.php").buildUpon();
+        String url = buil.build().toString();
+        StringRequest req = new StringRequest(
+                Request.Method.POST,
+                url,
+                listener,
+                errorLis
+        ){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params = new HashMap<>();
+                params.put("ten", "Tran Van Teo");
+                params.put("hsluong","1.2");
+                return params;
+            }
+        };
+        req.setRetryPolicy(new DefaultRetryPolicy(0,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        requestQueue.add((req));
     }
 
     private void xulyThemGet() {
@@ -78,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         Uri.Builder buil = Uri.parse(SERVER+"get_themNV.php").buildUpon();
-        buil.appendQueryParameter("ten","Teo");
+        buil.appendQueryParameter("ten","Nguyen Van Teo");
         buil.appendQueryParameter("hsluong","4.5");
         String url = buil.build().toString();
         StringRequest req = new StringRequest(
@@ -129,5 +176,23 @@ public class MainActivity extends AppCompatActivity {
         );
         req.setRetryPolicy(new DefaultRetryPolicy(0,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         reqQueue.add(req);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.other :
+                Intent intent = new Intent(MainActivity.this, com.example.hien.webser.NhanVien.class);
+                startActivity(intent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflate = getMenuInflater();
+        inflate.inflate(R.menu.main_menu,menu);
+        return super.onCreateOptionsMenu(menu);
     }
 }
